@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoodType } from "@/App";
+import ColorSpectrum from "@/components/ColorSpectrum";
 import { 
   Sun, 
   Cloud, 
@@ -11,7 +12,9 @@ import {
   Coffee, 
   Palette, 
   Minus, 
-  TrendingUp 
+  TrendingUp,
+  Camera,
+  Upload
 } from "lucide-react";
 
 interface MoodInputProps {
@@ -73,14 +76,37 @@ const moodOptions = [
     icon: TrendingUp, 
     description: 'Ready to achieve!' 
   },
+  { 
+    type: 'sad' as MoodType, 
+    label: 'Sad', 
+    icon: Cloud, 
+    description: 'Feeling down' 
+  },
 ];
 
 const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [spectrumPosition, setSpectrumPosition] = useState(50);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const handleMoodSelect = (mood: MoodType) => {
     setSelectedMood(mood);
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImage(e.target?.result as string);
+        // Simulate AI mood detection - placeholder for future API integration
+        const detectedMood = 'happy' as MoodType; // This will be replaced by AI model
+        setSelectedMood(detectedMood);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = () => {
@@ -99,8 +125,56 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
             How are you feeling today?
           </h1>
           <p className="text-muted-foreground">
-            Your mood helps PULSE personalize your experience
+            Select from the grid below or upload a photo for AI detection
           </p>
+        </div>
+
+        {/* Photo Upload Section */}
+        <div className="mb-8 animate-slide-up">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 h-20 flex flex-col items-center gap-2"
+            >
+              <Camera className="w-6 h-6" />
+              <span className="text-sm">Take Photo</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 h-20 flex flex-col items-center gap-2"
+            >
+              <Upload className="w-6 h-6" />
+              <span className="text-sm">Upload Image</span>
+            </Button>
+          </div>
+
+          {uploadedImage && (
+            <div className="mt-4 p-4 bg-surface-muted rounded-xl animate-fade-in">
+              <div className="flex items-center gap-3">
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded mood"
+                  className="w-16 h-16 rounded-lg object-cover"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">AI detected mood:</p>
+                  <p className="text-lg font-semibold capitalize" style={{ color: `hsl(var(--mood-${selectedMood}))` }}>
+                    {selectedMood}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mood Grid */}
@@ -132,6 +206,21 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
           })}
         </div>
 
+        {/* Color Spectrum Visualization */}
+        {selectedMood && (
+          <div className="mb-8 animate-fade-in">
+            <h3 className="text-lg font-semibold text-foreground mb-4 text-center">
+              Your mood on the spectrum
+            </h3>
+            <ColorSpectrum 
+              currentMood={selectedMood}
+              selectedPosition={spectrumPosition}
+              onPositionChange={setSpectrumPosition}
+              className="mb-4"
+            />
+          </div>
+        )}
+
         {/* Submit Button */}
         <div className="animate-bounce-in">
           <Button 
@@ -140,7 +229,7 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
             className="w-full py-4 text-lg font-medium rounded-2xl bg-gradient-primary disabled:opacity-50 disabled:cursor-not-allowed"
             size="lg"
           >
-            {selectedMood ? `Continue with ${selectedMood}` : 'Select your mood'}
+            {selectedMood ? 'Confirm Mood' : 'Select your mood'}
           </Button>
         </div>
 

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MoodType } from "@/App";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { 
   CheckCircle2, 
   Circle, 
@@ -11,7 +12,8 @@ import {
   Brain, 
   Clock,
   Star,
-  Zap
+  Zap,
+  RefreshCw
 } from "lucide-react";
 
 interface DailySuggestionsProps {
@@ -62,6 +64,10 @@ const getMoodTasks = (mood: MoodType) => {
       { id: '4', title: 'Regular task maintenance', priority: 'medium', estimated: '1 hour' },
       { id: '5', title: 'Catch up on industry reading', priority: 'low', estimated: '30 min' },
     ],
+    sad: [
+      { id: '4', title: 'Self-care and gentle activities', priority: 'low', estimated: '30 min' },
+      { id: '5', title: 'Connect with supportive colleagues', priority: 'medium', estimated: '15 min' },
+    ],
   };
 
   return [...baseTasks, ...(moodSpecificTasks[mood] || moodSpecificTasks.neutral)];
@@ -77,6 +83,8 @@ const wellnessNudges = [
 const DailySuggestions = ({ currentMood }: DailySuggestionsProps) => {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [completedNudges, setCompletedNudges] = useState<Set<number>>(new Set());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
   
   const tasks = getMoodTasks(currentMood);
 
@@ -98,6 +106,24 @@ const DailySuggestions = ({ currentMood }: DailySuggestionsProps) => {
       newCompleted.add(nudgeIndex);
     }
     setCompletedNudges(newCompleted);
+  };
+
+  const handleRefreshPlan = async () => {
+    setIsRefreshing(true);
+    
+    // Simulate API call to get updated suggestions
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Reset completed tasks to show fresh plan
+    setCompletedTasks(new Set());
+    setCompletedNudges(new Set());
+    
+    toast({
+      title: "Plan refreshed!",
+      description: "Your productivity plan has been updated based on your current mood.",
+    });
+    
+    setIsRefreshing(false);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -137,9 +163,21 @@ const DailySuggestions = ({ currentMood }: DailySuggestionsProps) => {
 
         {/* Task Suggestions */}
         <div className="animate-slide-up">
-          <div className="flex items-center gap-2 mb-4">
-            <Star className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Today's Suggestions</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold text-foreground">Today's Suggestions</h3>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshPlan}
+              disabled={isRefreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
           
           <div className="space-y-3">

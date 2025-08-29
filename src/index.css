@@ -39,6 +39,7 @@ All colors MUST be HSL. Calming, productivity-focused palette.
     --mood-creative: 280 100% 70%;  /* Magenta */
     --mood-neutral: 215 15% 70%;    /* Neutral gray */
     --mood-motivated: 120 60% 55%;  /* Green */
+    --mood-sad: 220 50% 60%;        /* Soft blue-gray */
     
     /* Semantic colors */
     --success: 142 76% 36%;
@@ -218,6 +219,7 @@ All colors MUST be HSL. Calming, productivity-focused palette.
   .mood-creative { background-color: hsl(var(--mood-creative)); }
   .mood-neutral { background-color: hsl(var(--mood-neutral)); }
   .mood-motivated { background-color: hsl(var(--mood-motivated)); }
+  .mood-sad { background-color: hsl(var(--mood-sad)); }
 }
 
 /* Keyframes */

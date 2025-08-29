@@ -76,7 +76,8 @@ export default {
 					tired: 'hsl(var(--mood-tired))',
 					creative: 'hsl(var(--mood-creative))',
 					neutral: 'hsl(var(--mood-neutral))',
-					motivated: 'hsl(var(--mood-motivated))'
+					motivated: 'hsl(var(--mood-motivated))',
+					sad: 'hsl(var(--mood-sad))'
 				}
 			},
 			backgroundImage: {

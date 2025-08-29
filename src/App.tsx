@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import SplashScreen from "./pages/SplashScreen";
+import Registration from "./pages/Registration";
 import MoodInput from "./pages/MoodInput";
 import DailySuggestions from "./pages/DailySuggestions";
 import Insights from "./pages/Insights";
@@ -13,11 +14,18 @@ import FloatingCompanion from "./components/FloatingCompanion";
 
 const queryClient = new QueryClient();
 
-export type MoodType = 'happy' | 'calm' | 'focused' | 'energetic' | 'stressed' | 'tired' | 'creative' | 'neutral' | 'motivated';
+export type MoodType = 'happy' | 'calm' | 'focused' | 'energetic' | 'stressed' | 'tired' | 'creative' | 'neutral' | 'motivated' | 'sad';
 
 const App = () => {
   const [currentMood, setCurrentMood] = useState<MoodType>('neutral');
   const [hasStarted, setHasStarted] = useState(false);
+  const [hasCompletedRegistration, setHasCompletedRegistration] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
+
+  const handleRegistrationComplete = (data: any) => {
+    setRegistrationData(data);
+    setHasCompletedRegistration(true);
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -30,12 +38,18 @@ const App = () => {
               <Route 
                 path="/" 
                 element={
-                  hasStarted ? (
-                    <MoodInput onMoodSelect={setCurrentMood} />
-                  ) : (
+                  !hasStarted ? (
                     <SplashScreen onGetStarted={() => setHasStarted(true)} />
+                  ) : !hasCompletedRegistration ? (
+                    <Registration onComplete={handleRegistrationComplete} />
+                  ) : (
+                    <MoodInput onMoodSelect={setCurrentMood} />
                   )
                 } 
+              />
+              <Route 
+                path="/registration" 
+                element={<Registration onComplete={handleRegistrationComplete} />} 
               />
               <Route 
                 path="/mood" 
@@ -47,15 +61,18 @@ const App = () => {
               />
               <Route 
                 path="/insights" 
-                element={<Insights />} 
+                element={<Insights currentMood={currentMood} />} 
               />
             </Routes>
             
-            {/* Show navigation and companion only after splash */}
-            {hasStarted && (
+            {/* Show navigation and companion only after registration */}
+            {hasStarted && hasCompletedRegistration && (
               <>
                 <BottomNavigation />
-                <FloatingCompanion currentMood={currentMood} />
+                <FloatingCompanion 
+                  currentMood={currentMood} 
+                  onMoodUpdate={setCurrentMood}
+                />
               </>
             )}
           </div>

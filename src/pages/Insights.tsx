@@ -1,6 +1,11 @@
 import { BarChart3, TrendingUp, Brain, Calendar, Target, Zap } from "lucide-react";
+import { MoodType } from "@/App";
 
-const Insights = () => {
+interface InsightsProps {
+  currentMood?: MoodType;
+}
+
+const Insights = ({ currentMood = 'neutral' }: InsightsProps) => {
   const mockInsights = [
     {
       title: "Peak Productivity Time",

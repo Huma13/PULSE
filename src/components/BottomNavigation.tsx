@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Heart, CheckSquare, BarChart3 } from "lucide-react";
+import { Heart, CheckSquare, BarChart3, Target } from "lucide-react";
 
 const navigationItems = [
   {
@@ -10,6 +10,11 @@ const navigationItems = [
   {
     path: '/tasks',
     label: 'Tasks',
+    icon: Target,
+  },
+  {
+    path: '/task-manager',
+    label: 'My Tasks',
     icon: CheckSquare,
   },
   {

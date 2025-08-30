@@ -9,6 +9,7 @@ import Registration from "./pages/Registration";
 import MoodInput from "./pages/MoodInput";
 import DailySuggestions from "./pages/DailySuggestions";
 import Insights from "./pages/Insights";
+import TaskManager from "./pages/TaskManager";
 import BottomNavigation from "./components/BottomNavigation";
 import FloatingCompanion from "./components/FloatingCompanion";
 
@@ -62,6 +63,10 @@ const App = () => {
               <Route 
                 path="/insights" 
                 element={<Insights currentMood={currentMood} />} 
+              />
+              <Route 
+                path="/task-manager" 
+                element={<TaskManager currentMood={currentMood} />} 
               />
             </Routes>
             

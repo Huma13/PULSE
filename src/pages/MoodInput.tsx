@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoodType } from "@/App";
 import ColorSpectrum from "@/components/ColorSpectrum";
+import { analyzeImageEmotion, getEmotionColorMapping } from "@/utils/emotionDetection";
 import { 
   Sun, 
   Cloud, 
@@ -88,6 +89,8 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [spectrumPosition, setSpectrumPosition] = useState(50);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [detectedColor, setDetectedColor] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -95,15 +98,31 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
     setSelectedMood(mood);
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setIsAnalyzing(true);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         setUploadedImage(e.target?.result as string);
-        // Simulate AI mood detection - placeholder for future API integration
-        const detectedMood = 'happy' as MoodType; // This will be replaced by AI model
-        setSelectedMood(detectedMood);
+        
+        try {
+          // Analyze emotion using EmoSet integration
+          const result = await analyzeImageEmotion(file);
+          setSelectedMood(result.emotion as MoodType);
+          setDetectedColor(result.color);
+          
+          const colorMapping = getEmotionColorMapping(result.emotion);
+          // Update spectrum position based on emotion intensity
+          setSpectrumPosition(result.intensity * 100);
+        } catch (error) {
+          console.error('Error analyzing image:', error);
+          // Fallback to happy mood
+          setSelectedMood('happy');
+          setDetectedColor('#FFD700');
+        } finally {
+          setIsAnalyzing(false);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -160,19 +179,40 @@ const MoodInput = ({ onMoodSelect }: MoodInputProps) => {
 
           {uploadedImage && (
             <div className="mt-4 p-4 bg-surface-muted rounded-xl animate-fade-in">
-              <div className="flex items-center gap-3">
-                <img
-                  src={uploadedImage}
-                  alt="Uploaded mood"
-                  className="w-16 h-16 rounded-lg object-cover"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">AI detected mood:</p>
-                  <p className="text-lg font-semibold capitalize" style={{ color: `hsl(var(--mood-${selectedMood}))` }}>
-                    {selectedMood}
-                  </p>
+              {isAnalyzing ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-lg bg-muted animate-pulse" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Analyzing your mood...</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-4 h-4 rounded-full bg-primary animate-bounce" />
+                      <div className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.1s' }} />
+                      <div className="w-4 h-4 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded mood"
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">EmoSet AI detected:</p>
+                    <p className="text-lg font-semibold capitalize" style={{ color: detectedColor || `hsl(var(--mood-${selectedMood}))` }}>
+                      {selectedMood}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div 
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: detectedColor || `hsl(var(--mood-${selectedMood}))` }}
+                      />
+                      <span className="text-xs text-muted-foreground">Color-Pedia mapping</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

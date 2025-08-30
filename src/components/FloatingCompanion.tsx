@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { MoodType } from "@/App";
 import { Brain, X, MessageCircle, Sparkles, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,25 @@ const getMoodEmoji = (mood: MoodType) => {
 const FloatingCompanion = ({ currentMood, onMoodUpdate }: FloatingCompanionProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQuickMood, setShowQuickMood] = useState(false);
+  const [showBurnoutCheck, setShowBurnoutCheck] = useState(false);
+  const [lastCheckTime, setLastCheckTime] = useState<Date>(new Date());
   const { toast } = useToast();
+
+  // Burnout prevention - check every 2 hours
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const timeDiff = now.getTime() - lastCheckTime.getTime();
+      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      
+      if (hoursDiff >= 2) {
+        setShowBurnoutCheck(true);
+        setLastCheckTime(now);
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [lastCheckTime]);
 
   const quickMoods: MoodType[] = ['happy', 'sad', 'stressed', 'energetic', 'tired'];
 
@@ -60,11 +78,26 @@ const FloatingCompanion = ({ currentMood, onMoodUpdate }: FloatingCompanionProps
     setIsExpanded(false);
   };
 
+  const handleBurnoutResponse = (needsBreak: boolean) => {
+    setShowBurnoutCheck(false);
+    if (needsBreak) {
+      toast({
+        title: "Take a break! 🧘‍♀️",
+        description: "PULSE recommends a 10-minute mindful break. Your productivity will thank you!",
+      });
+    } else {
+      toast({
+        title: "Great to hear! 💪",
+        description: "Keep up the amazing work, but remember to check in with yourself regularly.",
+      });
+    }
+  };
+
   return (
     <>
       {/* Main floating button */}
       <div 
-        className={`floating-companion ${isExpanded ? 'scale-110' : ''}`}
+        className={`floating-companion ${isExpanded ? 'scale-110' : ''} ${showBurnoutCheck ? 'animate-pulse-glow' : ''}`}
         style={{ backgroundColor: `hsl(var(--mood-${currentMood}))` }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -77,6 +110,11 @@ const FloatingCompanion = ({ currentMood, onMoodUpdate }: FloatingCompanionProps
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center text-xs">
                 {getMoodEmoji(currentMood)}
               </div>
+              {showBurnoutCheck && (
+                <div className="absolute -top-2 -left-2 w-4 h-4 bg-warning rounded-full animate-bounce">
+                  <div className="w-full h-full bg-warning rounded-full animate-ping" />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -140,6 +178,36 @@ const FloatingCompanion = ({ currentMood, onMoodUpdate }: FloatingCompanionProps
                 Update mood
               </Button>
             </div>
+
+            {/* Burnout check */}
+            {showBurnoutCheck && (
+              <div className="animate-fade-in mb-4 p-3 bg-warning/10 rounded-xl border border-warning/20">
+                <p className="text-sm font-medium text-foreground mb-3">
+                  🧘‍♀️ Quick check-in: How are you feeling right now?
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  You've been working for a while. Let's make sure you're not burning out!
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBurnoutResponse(true)}
+                    className="text-xs flex-1"
+                  >
+                    😴 Need a break
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBurnoutResponse(false)}
+                    className="text-xs flex-1"
+                  >
+                    💪 Feeling good
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Quick mood selector */}
             {showQuickMood && (

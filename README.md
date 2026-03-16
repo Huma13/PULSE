@@ -1,6 +1,6 @@
 # PULSE — Emotion-Adaptive AI Companion
 
-> Built in 48 hours · INFERENTIA 2.0 State-Level Hackathon · Team of 4
+> Built in 24 hours · INFERENTIA 2.0 State-Level Hackathon · Team of 4
 
 PULSE is a real-time AI companion that detects your emotional state through your webcam and adapts its entire personality — responses, tone, and UI — to match how you're feeling. It combines a CNN-based emotion detection model with a RAG-powered conversational engine to deliver interactions that feel genuinely personal.
 

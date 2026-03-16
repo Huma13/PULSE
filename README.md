@@ -14,8 +14,6 @@ Most AI assistants treat every user interaction identically, regardless of emoti
 
 ## Demo
 
-> 🎥 *[Add a screen recording GIF here — even a 5-second clip of the mood detection working makes a huge difference]*
-
 **Live project:** [Lovable deployment](https://lovable.dev/projects/cd2723bb-6331-447a-9b28-0f5c248f2ed2)
 
 ---
